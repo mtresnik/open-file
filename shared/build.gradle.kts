@@ -1,0 +1,40 @@
+plugins {
+    kotlin("jvm") version "2.2.21"
+}
+
+group = "org.open.file"
+version = "unspecified"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Use the Kotlin Test integration.
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+
+    // Use the JUnit 5 integration.
+    testImplementation(libs.junit.jupiter.engine)
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // This dependency is used by the application.
+    implementation(libs.guava)
+
+    implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+
+    implementation("commons-cli:commons-cli:1.4")
+
+    implementation("org.slf4j:slf4j-api:2.0.9")
+
+    // Source: https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    implementation("org.slf4j:slf4j-simple:2.0.17")
+}
+
+kotlin {
+    jvmToolchain(11)
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
