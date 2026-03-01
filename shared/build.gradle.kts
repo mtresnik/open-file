@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.2.21"
+    `maven-publish`
 }
 
 group = "org.open.file"
@@ -7,6 +8,24 @@ version = libs.versions.project
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/mtresnik/open-file")
+            credentials {
+                username = System.getenv("USERNAME") ?: findProperty("gpr.user")?.toString() ?: "mtresnik"
+                password = System.getenv("TOKEN") ?: findProperty("gpr.token")?.toString()
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+    }
 }
 
 dependencies {
