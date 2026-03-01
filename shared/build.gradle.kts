@@ -4,28 +4,10 @@ plugins {
 }
 
 group = "org.open.file"
-version = "unspecified"
+version = libs.versions.project
 
 repositories {
     mavenCentral()
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/mtresnik/open-file")
-            credentials {
-                username = System.getenv("USERNAME") ?: findProperty("gpr.user")?.toString() ?: "mtresnik"
-                password = System.getenv("TOKEN") ?: findProperty("gpr.token")?.toString()
-            }
-        }
-    }
-    publications {
-        create<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
 }
 
 dependencies {
