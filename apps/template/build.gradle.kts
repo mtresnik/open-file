@@ -1,5 +1,5 @@
 group = "org.open.file"
-version = "unspecified"
+version = libs.versions.project
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
@@ -8,6 +8,7 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    `maven-publish`
 }
 
 sqldelight {
@@ -18,6 +19,28 @@ sqldelight {
     }
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/mtresnik/open-file")
+            credentials {
+                username = System.getenv("USERNAME") ?: findProperty("gpr.user")?.toString() ?: "mtresnik"
+                password = System.getenv("TOKEN") ?: findProperty("gpr.token")?.toString()
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+        withType<MavenPublication>().all {
+            groupId = project.group.toString()
+            artifactId = "template"
+            version = project.version.toString()
+        }
+    }
+}
 
 repositories {
     // Use Maven Central for resolving dependencies.

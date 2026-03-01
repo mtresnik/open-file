@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.open.file"
-version = "unspecified"
+version = libs.versions.project
 
 repositories {
     mavenCentral()
