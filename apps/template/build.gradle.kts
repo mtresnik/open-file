@@ -35,9 +35,9 @@ publishing {
             from(components["java"])
         }
         withType<MavenPublication>().all {
-            groupId = project.group.toString()
+            groupId = "org.open.file"
             artifactId = "template"
-            version = project.version.toString()
+            version = libs.versions.project.get()
         }
     }
 }
