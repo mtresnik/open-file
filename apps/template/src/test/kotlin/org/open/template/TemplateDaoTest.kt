@@ -1,8 +1,8 @@
 package org.open.template
 
-import org.open.template.models.directory.DirectoryTemplate
-import org.open.template.models.directory.DirectoryTemplateConfig
-import org.open.template.store.TemplateDao
+import org.open.file.template.models.directory.DirectoryTemplate
+import org.open.file.template.models.directory.DirectoryTemplateConfig
+import org.open.file.template.store.TemplateDao
 import java.io.File
 import java.util.UUID
 import kotlin.test.BeforeTest
