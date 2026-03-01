@@ -43,7 +43,17 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.9")
 
     implementation(project(":shared"))
+    testImplementation(project(":shared"))
 }
+
+tasks.named("compileTestJava") {
+    dependsOn(tasks.getByPath(":shared:compileTestJava"))
+}
+
+tasks.named("test") {
+    dependsOn(tasks.getByPath(":shared:compileTestJava"))
+}
+
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {
