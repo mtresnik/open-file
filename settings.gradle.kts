@@ -11,7 +11,8 @@ plugins {
 }
 
 rootProject.name = "open-file"
-include("shared")
-include("apps")
-include("apps:template")
-include("apps:snapshot")
+include(":shared", ":apps:snapshot", ":apps:template")
+//include("shared")
+//include("apps")
+//include("apps:template")
+//include("apps:snapshot")
