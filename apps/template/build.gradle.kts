@@ -1,10 +1,10 @@
 group = "org.open.file"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     alias(libs.plugins.kotlin.jvm)
-    id("app.cash.sqldelight") version "2.2.1"
+    id("app.cash.sqldelight") version "2.3.2"
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
@@ -51,6 +51,7 @@ repositories {
 val buildTarget = findProperty("build.target")?.toString()?.takeIf { it.isNotBlank() } ?: "sql"
 
 dependencies {
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     // Use the JUnit 5 integration.
@@ -61,7 +62,7 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
-    implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+    implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
 
     implementation("commons-cli:commons-cli:1.4")
 
@@ -97,4 +98,14 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "org.open.file.template.MainKt"
+}
+
+tasks.withType<Tar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+tasks.withType<Zip> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
 }

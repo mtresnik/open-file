@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.open.file.template"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 publishing {
     repositories {

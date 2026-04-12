@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    id("app.cash.sqldelight") version "2.2.1"
+    id("app.cash.sqldelight") version "2.3.2"
     `maven-publish`
 }
 
 group = "org.open.file.snapshot"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 sqldelight {
     databases {
@@ -48,7 +48,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation(libs.guava)
-    implementation("app.cash.sqldelight:sqlite-driver:2.2.1")
+    implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
     implementation("commons-cli:commons-cli:1.4")
     implementation("org.slf4j:slf4j-api:2.0.9")
 
@@ -70,4 +70,10 @@ java {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
 }
+
+tasks.withType<Tar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+tasks.withType<Zip> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }

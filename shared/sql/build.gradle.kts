@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 repositories {
     mavenCentral()
@@ -22,7 +22,7 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
-    implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+    implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
 
     implementation("commons-cli:commons-cli:1.4")
 
@@ -40,6 +40,9 @@ kotlin {
     jvmToolchain(11)
 }
 
-tasks.test {
+tasks.named<Test>("test") {
     useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
 }

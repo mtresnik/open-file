@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 repositories {
     mavenCentral()

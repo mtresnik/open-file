@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.open.file.snapshot"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 publishing {
     repositories {
@@ -68,4 +68,7 @@ java {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
 }

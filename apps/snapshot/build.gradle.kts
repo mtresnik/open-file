@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "org.open.file"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 
 publishing {
@@ -53,7 +53,7 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
-    implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+    implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
 
     implementation("commons-cli:commons-cli:1.4")
 
@@ -71,14 +71,6 @@ dependencies {
     }
 }
 
-tasks.named("compileTestJava") {
-    dependsOn(tasks.getByPath(":shared:compileTestJava"))
-}
-
-tasks.named("test") {
-    dependsOn(tasks.getByPath(":shared:compileTestJava"))
-}
-
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {
@@ -92,7 +84,16 @@ application {
     mainClass = "org.open.file.snapshot.MainKt"
 }
 
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+tasks.named("compileTestJava") {
+    dependsOn(tasks.getByPath(":shared:compileTestJava"))
 }
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
+}
+
+tasks.withType<Tar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+tasks.withType<Zip> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
