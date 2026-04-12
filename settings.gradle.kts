@@ -11,8 +11,17 @@ plugins {
 }
 
 rootProject.name = "open-file"
-include(":shared", ":apps:snapshot", ":apps:template")
-//include("shared")
-//include("apps")
-//include("apps:template")
-//include("apps:snapshot")
+include(
+    ":shared",
+    ":shared:core",
+    ":shared:snapshot",
+    ":shared:sql",
+    ":shared:mongo",
+    ":apps:snapshot",
+    ":apps:snapshot:sql",
+    ":apps:snapshot:mongo",
+    ":apps:template"
+)
+include("apps:template:mongo")
+include("apps:template:sql")
+include("shared:template")

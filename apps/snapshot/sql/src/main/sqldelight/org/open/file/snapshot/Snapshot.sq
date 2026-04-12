@@ -1,0 +1,45 @@
+import java.io.File;
+import java.util.Date;
+import java.util.UUID;
+import kotlin.Any;
+import kotlin.Boolean;
+import kotlin.String;
+import kotlin.collections.MutableMap;
+
+CREATE TABLE IF NOT EXISTS snapshots (
+  id TEXT AS UUID NOT NULL,
+  created INTEGER AS Date DEFAULT 0 NOT NULL,
+  updated INTEGER AS Date DEFAULT 0 NOT NULL,
+  deleted INTEGER AS Boolean DEFAULT 0 NOT NULL,
+  properties BLOB AS MutableMap<String, Any> NOT NULL,
+  target TEXT AS File NOT NULL,
+  UNIQUE(id),
+  PRIMARY KEY(id)
+);
+
+CREATE INDEX snapshot_id ON snapshots(id);
+CREATE INDEX snapshot_created ON snapshots(created);
+CREATE INDEX snapshot_updated ON snapshots(updated);
+CREATE INDEX snapshot_deleted ON snapshots(deleted);
+CREATE INDEX snapshot_target ON snapshots(target);
+
+selectAll:
+SELECT *
+FROM snapshots;
+
+findById:
+SELECT *
+FROM snapshots
+WHERE id == ?;
+
+insert:
+INSERT INTO snapshots(id, created, updated, deleted, properties, target)
+VALUES (?,   ?, ?, ?, ?, ?);
+
+insertFullsnapshotObject:
+INSERT INTO snapshots(id, created, updated, deleted, properties, target)
+VALUES ?;
+
+deleteById:
+DELETE FROM snapshots
+WHERE id == ?;

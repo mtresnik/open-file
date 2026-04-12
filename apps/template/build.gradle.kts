@@ -48,6 +48,8 @@ repositories {
     mavenCentral()
 }
 
+val buildTarget = findProperty("build.target")?.toString()?.takeIf { it.isNotBlank() } ?: "sql"
+
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
@@ -67,16 +69,23 @@ dependencies {
 
     implementation(project(":shared"))
     testImplementation(project(":shared"))
-}
+    implementation(project(":shared:core"))
+    testImplementation(project(":shared:core"))
 
-tasks.named("compileTestJava") {
-    dependsOn(tasks.getByPath(":shared:compileTestJava"))
-}
+    implementation(project(":shared:template"))
 
-tasks.named("test") {
-    dependsOn(tasks.getByPath(":shared:compileTestJava"))
+    when (buildTarget) {
+        "mongo" -> {
+            implementation(project(":shared:mongo"))
+            implementation(project(":apps:template:mongo"))
+        }
+        "sql"   -> {
+            implementation(project(":shared:sql"))
+            implementation(project(":apps:template:sql"))
+        }
+        else    -> throw UnsupportedOperationException("Unsupported database option: $buildTarget!")
+    }
 }
-
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {
@@ -88,9 +97,4 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "org.open.file.template.MainKt"
-}
-
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
 }

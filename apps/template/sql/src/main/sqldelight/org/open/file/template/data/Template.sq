@@ -1,0 +1,65 @@
+import java.util.Date;
+import java.util.UUID;
+import kotlin.Any;
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS templates (
+  id TEXT AS UUID NOT NULL,
+  type TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  target TEXT AS Any NOT NULL,
+  created INTEGER AS Date DEFAULT 0,
+  updated INTEGER AS Date DEFAULT 0,
+  deleted INTEGER AS Boolean DEFAULT 0,
+  properties BLOB NOT NULL,
+  UNIQUE(id),
+  PRIMARY KEY(id)
+);
+
+CREATE INDEX template_id ON templates(id);
+CREATE INDEX template_type ON templates(type);
+CREATE INDEX template_target ON templates(target);
+CREATE INDEX template_created ON templates(created);
+CREATE INDEX template_updated ON templates(updated);
+CREATE INDEX template_deleted ON templates(deleted);
+
+selectAll:
+SELECT *
+FROM templates;
+
+selectType:
+SELECT *
+FROM templates
+WHERE type == ?;
+
+selectTarget:
+SELECT *
+FROM templates
+WHERE target == ?;
+
+selectTypeAndTarget:
+SELECT *
+FROM templates
+WHERE type == ? AND target == ?;
+
+findById:
+SELECT *
+FROM templates
+WHERE id == ?;
+
+insert:
+INSERT INTO templates(id, type, name, description, target, created, updated, deleted, properties)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertFullTemplateObject:
+INSERT INTO templates(id, type, name, description, target, created, updated, deleted, properties)
+VALUES ?;
+
+aggTypes:
+SELECT group_concat(type, ",")
+FROM templates;
+
+deleteById:
+DELETE FROM templates
+WHERE id == ?;

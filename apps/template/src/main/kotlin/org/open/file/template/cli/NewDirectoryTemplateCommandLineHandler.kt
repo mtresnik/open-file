@@ -8,7 +8,7 @@ import org.open.file.template.cli.models.DefaultCommandState
 import org.open.file.template.cli.models.ErrorCommandState
 import org.open.file.template.models.TemplateData
 import org.open.file.template.models.directory.DirectoryTemplateData
-import org.open.file.template.utils.FileSystemUtils
+import org.open.file.utils.FileSystemUtils
 import java.io.IOException
 
 class NewDirectoryTemplateCommandLineHandler(override var app: App, private val args: TemplateData) : CommandLineHandler<App>() {
@@ -47,7 +47,7 @@ class NewDirectoryTemplateCommandLineHandler(override var app: App, private val 
         )
 
         return try {
-            app.create(data)
+            requireNotNull(app.create(data))
             logger.info("Template created!")
             DefaultCommandState(true)
                 .apply { mutation = true }

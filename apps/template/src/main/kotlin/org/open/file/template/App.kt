@@ -5,11 +5,12 @@ import org.open.file.template.models.Template
 import org.open.file.template.models.TemplateData
 import org.open.file.template.models.TemplateFactory
 import org.open.file.template.store.TemplateDao
+import org.open.file.template.store.TemplateDaoProvider
 import org.slf4j.LoggerFactory
 
 class App {
 
-    private val templateDao: TemplateDao = TemplateDao()
+    private val templateDao: TemplateDao = TemplateDaoProvider.getDao()
 
     fun list(): List<Template> {
         val logger = LoggerFactory.getLogger(javaClass)
@@ -44,7 +45,7 @@ class App {
         return types
     }
 
-    fun create(data: TemplateData): Template {
+    fun create(data: TemplateData): Template? {
         val logger = LoggerFactory.getLogger(javaClass)
         logger.info("Creating template...")
         val template = TemplateFactory[data]

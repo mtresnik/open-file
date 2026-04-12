@@ -8,9 +8,9 @@ import org.open.file.template.cli.models.DefaultCommandState
 import org.open.file.template.models.TemplateData
 import org.open.file.template.models.TemplateFactory
 import org.open.file.template.models.directory.DirectoryTemplate
-import org.open.file.template.utils.filterNotBlank
+import org.open.file.utils.filterNotBlank
 
-class NewCommandLineHandler(override var app: App, vararg args : String) : org.open.file.template.cli.CommandLineHandler<App>() {
+class NewCommandLineHandler(override var app: App, vararg args : String) : CommandLineHandler<App>() {
 
     override val parent: Class<*>
         get() = CommandLineHandler::class.java
