@@ -5,6 +5,13 @@
  * For more detailed information on multi-project builds, please refer to https://docs.gradle.org/9.2.1/userguide/multi_project_builds.html in the Gradle documentation.
  */
 
+pluginManagement {
+    plugins {
+        kotlin("jvm") version "2.1.20"
+        kotlin("plugin.serialization") version "2.1.20"
+    }
+}
+
 plugins {
     // Apply the foojay-resolver plugin to allow automatic download of JDKs
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
@@ -17,11 +24,12 @@ include(
     ":shared:snapshot",
     ":shared:sql",
     ":shared:mongo",
-    ":apps:snapshot",
+    ":shared:template",
     ":apps:snapshot:sql",
     ":apps:snapshot:mongo",
-    ":apps:template"
+    ":apps:template:sql",
+    ":apps:template:mongo"
 )
-include("apps:template:mongo")
-include("apps:template:sql")
-include("shared:template")
+include("apps:snapshot:api")
+include("apps:template:cli")
+include("apps:template:api")

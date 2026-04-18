@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    kotlin("plugin.serialization") version "2.3.0"
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 group = "org.open.file.shared"
@@ -22,7 +22,7 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
-    implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
+    implementation(libs.sqldelight.driver)
 
     implementation("commons-cli:commons-cli:1.4")
 

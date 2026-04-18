@@ -1,0 +1,18 @@
+CREATE TABLE snapshots (
+    id TEXT NOT NULL PRIMARY KEY,
+    rootPath TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+insertFullsnapshotObject:
+INSERT INTO snapshots (id, rootPath, createdAt)
+VALUES ?;
+
+findById:
+SELECT * FROM snapshots WHERE id = ?;
+
+selectAll:
+SELECT * FROM snapshots;
+
+deleteById:
+DELETE FROM snapshots WHERE id = ?;

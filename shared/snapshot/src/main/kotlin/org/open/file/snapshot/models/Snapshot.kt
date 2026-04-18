@@ -1,12 +1,34 @@
 package org.open.file.snapshot.models
 
-import java.io.File
-import java.util.Date
 import java.util.UUID
+import kotlin.time.Instant
 
-data class Snapshot(val id: UUID,
-                    var created: Date,
-                    var updated: Date,
-                    var deleted: Boolean,
-                    var properties: MutableMap<String, Any> = mutableMapOf(),
-                    var target: File) {}
+interface Snapshot {
+    val rootPath: String
+    val createdAt: Instant
+
+
+    fun toSaved(id: String = UUID.randomUUID().toString()): SavedSnapshot {
+        return SavedSnapshot(id, rootPath, createdAt)
+    }
+
+}
+
+data class UnsavedSnapshot(
+    override val rootPath: String,
+    override val createdAt: Instant,
+) : Snapshot {
+
+
+}
+
+data class SavedSnapshot(
+    val id: String,
+    override val rootPath: String,
+    override val createdAt: Instant,
+) : Snapshot {
+
+    override fun toSaved(id: String): SavedSnapshot {
+        return this
+    }
+}

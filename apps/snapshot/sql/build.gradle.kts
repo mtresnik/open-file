@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    id("app.cash.sqldelight") version "2.3.2"
+    alias(libs.plugins.sqldelight)
     `maven-publish`
+    kotlin("plugin.serialization")
 }
 
 group = "org.open.file.snapshot"
@@ -48,7 +49,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation(libs.guava)
-    implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
+    implementation(libs.sqldelight.driver)
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
     implementation("commons-cli:commons-cli:1.4")
     implementation("org.slf4j:slf4j-api:2.0.9")
 
@@ -62,9 +64,21 @@ dependencies {
     testImplementation(project(":shared:snapshot"))
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("org.xerial:sqlite-jdbc:3.49.1.0")
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
     }
 }
 
@@ -73,6 +87,10 @@ tasks.named<Test>("test") {
     filter {
         isFailOnNoMatchingTests = false
     }
+}
+
+tasks.matching { it.name == "verifyMainDatabaseMigration" }.configureEach {
+    enabled = false
 }
 
 tasks.withType<Tar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }

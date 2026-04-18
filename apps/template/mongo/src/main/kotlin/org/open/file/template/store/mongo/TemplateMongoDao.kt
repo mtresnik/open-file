@@ -35,6 +35,11 @@ class TemplateMongoDao: TemplateDao {
         return result
     }
 
+    override fun readAll(): List<Template> {
+        val result = runBlocking { collection.find<Template>().limit(100).toList() }
+        return result
+    }
+
     override fun update(template: Template, upsert: Boolean) {
         val options = ReplaceOptions().upsert(upsert)
         val result = runBlocking {
@@ -70,9 +75,10 @@ class TemplateMongoDao: TemplateDao {
         return result.deletedCount > 0
     }
 
-    override fun list(): List<Template> {
-        val result = runBlocking { collection.find<Template>().limit(100).toList() }
-        return result
+    override fun deleteById(id: String): Boolean {
+        val result = runBlocking { collection.deleteOne(eq("_id", ObjectId(id))) }
+        return result.deletedCount > 0
     }
+
 
 }

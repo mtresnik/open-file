@@ -1,0 +1,31 @@
+CREATE TABLE nodes (
+    id TEXT NOT NULL PRIMARY KEY,
+    snapshotId TEXT NOT NULL,
+    parentId TEXT,
+    type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL,
+    hash TEXT NOT NULL,
+
+    FOREIGN KEY (snapshotId) REFERENCES snapshots(id) ON DELETE CASCADE,
+    FOREIGN KEY (parentId) REFERENCES nodes(id) ON DELETE CASCADE
+);
+
+insert:
+INSERT INTO nodes (id, snapshotId, parentId, type, name, path, hash)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+getBySnapshotId:
+SELECT * FROM nodes WHERE snapshotId = ?;
+
+getChildren:
+SELECT * FROM nodes WHERE parentId = ?;
+
+getByPath:
+SELECT * FROM nodes WHERE snapshotId = ? AND path LIKE ?;
+
+deleteBySnapshotId:
+DELETE FROM nodes WHERE snapshotId = ?;
+
+selectAll:
+SELECT * FROM nodes LIMIT 100;

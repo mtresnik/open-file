@@ -1,0 +1,22 @@
+package org.open.file.snapshot
+
+import org.open.file.snapshot.models.Snapshot
+import org.open.file.snapshot.store.SnapshotDaoProvider
+
+class SnapshotService {
+
+    private val dao = SnapshotDaoProvider.getDao()
+
+    fun getAll(): List<Snapshot> {
+        return dao.readAll()
+    }
+
+    fun getById(id: String): Snapshot? {
+        return dao.read(id)
+    }
+
+    fun create(snapshot: Snapshot): Snapshot? {
+        return dao.create(snapshot)
+    }
+
+}

@@ -11,12 +11,14 @@ interface TemplateDao {
 
     fun read(id: String): Template?
 
+    fun readAll(): List<Template>
+
     fun update(template: Template, upsert: Boolean = true)
 
     fun update(templateList: List<Template>, upsert: Boolean = true)
 
     fun delete(template: Template): Boolean
 
-    fun list(): List<Template>
+    fun deleteById(id: String): Boolean
 
 }

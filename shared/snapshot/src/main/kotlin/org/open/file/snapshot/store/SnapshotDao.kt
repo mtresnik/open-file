@@ -11,6 +11,8 @@ interface SnapshotDao {
 
     fun read(id: String): Snapshot?
 
+    fun readAll(): List<Snapshot>
+
     fun update(snapshot: Snapshot, upsert: Boolean = true)
 
     fun update(snapshotList: List<Snapshot>, upsert: Boolean = true)

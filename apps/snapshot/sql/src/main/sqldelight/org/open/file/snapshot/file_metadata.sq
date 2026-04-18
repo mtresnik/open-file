@@ -1,0 +1,19 @@
+CREATE TABLE file_metadata (
+    nodeId TEXT NOT NULL PRIMARY KEY,
+    size INTEGER NOT NULL,
+    lastModified INTEGER NOT NULL,
+
+    FOREIGN KEY (nodeId) REFERENCES nodes(id) ON DELETE CASCADE
+);
+
+insert:
+INSERT INTO file_metadata (nodeId, size, lastModified)
+VALUES (?, ?, ?);
+
+getByNodeId:
+SELECT * FROM file_metadata WHERE nodeId = ?;
+
+getBySnapshotId:
+SELECT fm.* FROM file_metadata fm
+INNER JOIN nodes n ON fm.nodeId = n.id
+WHERE n.snapshotId = ?;

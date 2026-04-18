@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `maven-publish`
+    kotlin("plugin.serialization")
 }
 
 group = "org.open.file.snapshot"
@@ -48,6 +49,9 @@ dependencies {
     implementation(platform("org.mongodb:mongodb-driver-bom:5.6.4"))
     implementation("org.mongodb:mongodb-driver-sync")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.mongodb:bson-kotlinx:4.11.0")
+
     implementation(project(":shared"))
     testImplementation(project(":shared"))
     implementation(project(":shared:core"))
@@ -63,6 +67,12 @@ dependencies {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
     }
 }
 

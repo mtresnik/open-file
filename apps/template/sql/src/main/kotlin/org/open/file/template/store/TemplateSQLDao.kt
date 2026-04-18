@@ -17,7 +17,7 @@ import java.util.*
 class TemplateSQLDao : TemplateDao {
 
     private val templatesDatabase: File by lazy { home(TEMPLATES_DB_FILE_NAME).apply { parentFile.mkdirs() } }
-    private val databaseUrl = "jdbc:sqlite:file://${templatesDatabase.absolutePath}"
+    private val databaseUrl = "jdbc:sqlite:file:///${templatesDatabase.absolutePath}"
     val driver: SqlDriver = JdbcSqliteDriver(databaseUrl, Properties(), Database.Schema)
 
     private fun getDatabase(): Database {
@@ -36,7 +36,7 @@ class TemplateSQLDao : TemplateDao {
         return types.flatMap { it.uppercase().split(",") }.distinct()
     }
 
-    override fun list(): List<Template> {
+    override fun readAll(): List<Template> {
         val database = getDatabase()
         val templates : List<Templates> = database.templateQueries.selectAll().executeAsList()
         return templates.toModel()
@@ -45,13 +45,13 @@ class TemplateSQLDao : TemplateDao {
     override val type: StoreType
         get() = StoreType.SQL
 
-    override fun create(entity: Template): Template {
+    override fun create(template: Template): Template {
         val database = getDatabase()
-        entity.created = Date()
-        entity.updated = Date()
-        entity.deleted = false
-        database.templateQueries.insertFullTemplateObject(entity.fromModel())
-        return entity
+        template.created = Date()
+        template.updated = Date()
+        template.deleted = false
+        database.templateQueries.insertFullTemplateObject(template.fromModel())
+        return template
     }
 
     override fun read(id: String): Template? {
@@ -81,6 +81,11 @@ class TemplateSQLDao : TemplateDao {
         return true
     }
 
+    override fun deleteById(id: String): Boolean {
+        val database = getDatabase()
+        database.templateQueries.deleteById(UUID.fromString(id))
+        return true
+    }
 
     fun findById(id: UUID): Template? {
         return read(id.toString())

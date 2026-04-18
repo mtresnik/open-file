@@ -2,10 +2,6 @@ package org.open.file.snapshot.store.sql
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import org.open.file.shared.sql.adapters.AnyMapAdapter
-import org.open.file.shared.sql.adapters.DateAdapter
-import org.open.file.shared.sql.adapters.FileAdapter
-import org.open.file.shared.sql.adapters.UUIDAdapter
 import org.open.file.snapshot.Database
 import org.open.file.snapshot.Snapshots
 import org.open.file.snapshot.models.Snapshot
@@ -25,57 +21,57 @@ class SnapshotSQLDao : SnapshotDao {
         get() = StoreType.SQL
 
     private fun getDatabase(): Database {
-        val adapter = Snapshots.Adapter(
-            idAdapter       = UUIDAdapter,
-            createdAdapter  = DateAdapter,
-            updatedAdapter  = DateAdapter,
-            propertiesAdapter = AnyMapAdapter,
-            targetAdapter = FileAdapter
-        )
-        return Database(driver, adapter)
+        return Database(driver)
     }
 
     fun list(): List<Snapshot> {
         val database = getDatabase()
-        val snapshots : List<Snapshots> = database.snapshotQueries.selectAll().executeAsList()
-        return snapshots.toModel()
+        val snapshots : List<Snapshots> = database.snapshotsQueries.selectAll().executeAsList()
+        return snapshots.toModelList()
+    }
+
+    override fun readAll(): List<Snapshot> {
+        val database = getDatabase()
+        val snapshots : List<Snapshots> = database.snapshotsQueries.selectAll().executeAsList()
+        return snapshots.toModelList()
     }
 
     override fun create(snapshot: Snapshot): Snapshot {
         val database = getDatabase()
-        snapshot.created = Date()
-        snapshot.updated = Date()
-        database.snapshotQueries.insertFullsnapshotObject(snapshot.fromModel())
+        val toSave = snapshot.toSaved()
+        database.snapshotsQueries.insertFullsnapshotObject(toSave.fromModel())
         return snapshot
     }
 
     override fun read(id: String): Snapshot? {
         val database = getDatabase()
-        val databaseObject = database.snapshotQueries.findById(UUID.fromString(id)).executeAsOneOrNull()
+        val databaseObject = database.snapshotsQueries.findById(id).executeAsOneOrNull()
         return databaseObject?.toModel()
     }
 
     override fun update(snapshot: Snapshot, upsert: Boolean) {
         val database = getDatabase()
-        database.snapshotQueries.insertFullsnapshotObject(snapshot.fromModel())
+        val toSave = snapshot.toSaved()
+        database.snapshotsQueries.insertFullsnapshotObject(toSave.fromModel())
     }
 
     override fun update(snapshotList: List<Snapshot>, upsert: Boolean) {
         val database = getDatabase()
         snapshotList.forEach { snapshot ->
-            database.snapshotQueries.insertFullsnapshotObject(snapshot.fromModel())
+            database.snapshotsQueries.insertFullsnapshotObject(snapshot.toSaved().fromModel())
         }
     }
 
     override fun delete(snapshot: Snapshot) : Boolean{
         val database = getDatabase()
-        database.snapshotQueries.deleteById(snapshot.id)
+        val toSave = snapshot.toSaved()
+        database.snapshotsQueries.deleteById(toSave.id)
         return true
     }
 
     fun findById(id: UUID): Snapshot? {
         val database = getDatabase()
-        val found = database.snapshotQueries.findById(id).executeAsOneOrNull()
+        val found = database.snapshotsQueries.findById(id.toString()).executeAsOneOrNull()
         return found?.toModel()
     }
 
