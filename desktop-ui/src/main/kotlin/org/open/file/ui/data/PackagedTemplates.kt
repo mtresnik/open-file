@@ -476,7 +476,7 @@ val PACKAGED_TEMPLATES: List<PackagedTemplate> = listOf(
                 write(dest, "Cargo.toml", """
                     [package]
                     name = "$projectName"
-                    version = "0.1.0"
+                    version = "gi0.1.0"
                     edition = "2021"
 
                     [dependencies]

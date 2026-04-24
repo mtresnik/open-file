@@ -20,6 +20,17 @@ val nativePackageVersion: String = projectVersion()
     .substringBefore('-')
     .takeIf { it.matches(Regex("""\d+\.\d+\.\d+""")) } ?: "1.0.0"
 
+// macOS DMG validator additionally requires MAJOR >= 1 — `0.x.y`
+// versions are rejected at jpackage configure time even when you're
+// only building the .deb / .msi. MSI and DEB tolerate 0.x.y, so
+// only the macOS-specific override gets bumped. The headline
+// `packageVersion` (and `AppInfo.VERSION`) keep the real version
+// the rest of the build sees.
+val macOSPackageVersion: String = run {
+    val major = nativePackageVersion.substringBefore('.').toIntOrNull() ?: 1
+    if (major < 1) "1.0.0" else nativePackageVersion
+}
+
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
@@ -79,6 +90,13 @@ compose.desktop {
             )
             packageName = "open-file"
             packageVersion = nativePackageVersion
+
+            macOS {
+                // DMG rejects MAJOR=0; route DMG-bound builds
+                // through the bumped fallback while letting MSI /
+                // DEB use the real project version.
+                packageVersion = macOSPackageVersion
+            }
 
             // JDK modules the packaged `jlink` runtime needs. Without
             // these, the bundled JRE is trimmed to java.base +

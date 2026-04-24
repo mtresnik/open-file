@@ -3,27 +3,28 @@
  * order:
  *
  *   1. `RELEASE_VERSION` env var — set by the release CI workflow
- *      from the pushed git tag (e.g. `v0.0.1` → `0.0.1`). Takes
- *      precedence over every other rule so explicit overrides
- *      always win.
+ *      from the pushed git tag (e.g. `v0.0.1` → `0.0.1`). Wins over
+ *      every other rule so explicit overrides always apply.
  *
- *   2. Develop-branch snapshot. If the current branch is `develop`
- *      (checked via `GITHUB_REF_NAME` in CI, `git rev-parse
- *      --abbrev-ref HEAD` locally), take the last `v*` semver tag
- *      and bump its minor component, then suffix `-SNAPSHOT`.
- *      Example: last tag `v0.0.1` → develop builds report
- *      `0.1.0-SNAPSHOT`. No tags yet? Start from `0.1.0-SNAPSHOT`.
+ *   2. Develop-branch snapshot. If the current branch is `develop`,
+ *      take the last `v*` semver tag and bump its minor, then
+ *      suffix `-SNAPSHOT`. No tags yet → start from `0.1.0-SNAPSHOT`.
+ *      Example: last tag `v0.0.1` → develop reports `0.1.0-SNAPSHOT`.
  *
- *   3. `git describe --tags --always --dirty=-SNAPSHOT` — for other
- *      local / feature-branch builds, gives something like
+ *   3. `git describe --tags --always --dirty=-SNAPSHOT` — for
+ *      other local / feature-branch builds. Returns something like
  *      `0.0.1-3-g0deadbe` on a commit past the tag.
  *
- *   4. `0.0.0-SNAPSHOT` — fallback when there's no git available
- *      (source tarballs, some CI contexts).
+ *   4. `0.0.0-SNAPSHOT` (or `0.0.0-SNAPSHOT-<sha>` if we have a
+ *      commit hash) — fallback when there's no git history yet
+ *      (fresh repo, no tags, or the build is running outside a
+ *      working tree). Crucially this is what you get *before*
+ *      cutting your first tag.
  *
- * The leading `v` on tags is stripped so downstream consumers get
- * bare semver (e.g. the MSI `packageVersion` attribute, which
- * rejects `v`-prefixed values).
+ * Branch detection prefers `GITHUB_REF_NAME` (set by GitHub Actions
+ * on push events) and falls back to `git rev-parse --abbrev-ref
+ * HEAD` for local builds. Detached-HEAD checkouts return null and
+ * fall through to `git describe`.
  */
 fun projectVersion(): String {
     System.getenv("RELEASE_VERSION")
@@ -42,9 +43,8 @@ fun projectVersion(): String {
 }
 
 /**
- * Current branch name. Prefers `GITHUB_REF_NAME` (set by GitHub
- * Actions on push events), falls back to `git rev-parse`. Returns
- * null in detached-HEAD contexts where neither works.
+ * Current branch name from CI env var or `git rev-parse`. Returns
+ * null in detached-HEAD contexts.
  */
 private fun currentBranch(): String? {
     System.getenv("GITHUB_REF_NAME")
@@ -53,13 +53,14 @@ private fun currentBranch(): String? {
         ?.let { return it }
 
     return runGit("rev-parse", "--abbrev-ref", "HEAD")
-        ?.takeUnless { it == "HEAD" }  // detached HEAD
+        ?.takeUnless { it == "HEAD" }
 }
 
 /**
  * The most recent `v<major>.<minor>.<patch>` tag reachable from
  * the current commit, stripped of its leading `v`. Returns null if
- * the repo has no semver tags yet.
+ * the repo has no semver tags yet — which is the expected case for
+ * a project that hasn't cut its first release.
  */
 private fun lastSemverTag(): String? {
     val raw = runGit("tag", "--list", "v[0-9]*.[0-9]*.[0-9]*", "--sort=-v:refname")
@@ -71,9 +72,9 @@ private fun lastSemverTag(): String? {
 }
 
 /**
- * Increment the minor of a bare `major.minor.patch` string, reset
- * patch to 0. `0.0.1` → `0.1.0`, `1.4.7` → `1.5.0`. Falls back to
- * `0.1.0` if the input doesn't parse.
+ * Increment the minor of a bare `major.minor.patch` string and
+ * reset patch to 0. `0.0.1` → `0.1.0`, `1.4.7` → `1.5.0`. Falls
+ * back to `0.1.0` if the input doesn't parse.
  */
 private fun bumpMinor(version: String): String {
     val parts = version.split('.')
@@ -84,17 +85,30 @@ private fun bumpMinor(version: String): String {
 }
 
 /**
- * `git describe --tags --always --dirty=-SNAPSHOT` with leading-v
- * stripping. Returns null when git fails or the output is empty.
+ * `git describe --tags --always --dirty=-SNAPSHOT`. With no tags
+ * present, `--always` makes git fall back to the abbreviated
+ * commit SHA — useful as an identifier but not a valid semver. We
+ * detect that pre-tag case and produce `0.0.0-SNAPSHOT-<sha>`
+ * instead so downstream consumers (Gradle module versions, MSI
+ * sanitizer, etc.) see something parseable.
  */
-private fun gitDescribe(): String? =
-    runGit("describe", "--tags", "--always", "--dirty=-SNAPSHOT")
-        ?.removePrefix("v")
+private fun gitDescribe(): String? {
+    val output = runGit("describe", "--tags", "--always", "--dirty=-SNAPSHOT")
+        ?: return null
+    val stripped = output.removePrefix("v")
 
-/**
- * Run `git` with [args] and return trimmed stdout, or null if the
- * process fails or prints nothing.
- */
+    // Pre-first-tag world: `git describe --always` returns just a
+    // commit SHA (no dots, optional `-SNAPSHOT` suffix from
+    // --dirty). Wrap it in a proper SNAPSHOT version so callers
+    // never see a bare hash as a version.
+    val withoutDirtyMarker = stripped.removeSuffix("-SNAPSHOT")
+    if (!withoutDirtyMarker.contains('.')) {
+        return "0.0.0-SNAPSHOT-$withoutDirtyMarker"
+    }
+    return stripped
+}
+
+/** Run `git <args>`; return trimmed stdout, or null if it fails. */
 private fun runGit(vararg args: String): String? = runCatching {
     val process = ProcessBuilder(listOf("git") + args.toList())
         .redirectErrorStream(true)
