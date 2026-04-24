@@ -30,3 +30,43 @@ val CommandLine.type: String?
 
 val CommandLine.types: Boolean
     get() = "types" in this
+
+/**
+ * `--id` / `-i` option accessor. Used by the snapshot and backup
+ * CLIs to target a specific row by its UUID — e.g. `snapshot delete
+ * --id 48c1…` or `backup restore --id 22f5…`.
+ */
+val CommandLine.id: String?
+    get() = this["id"] ?: this["i"]
+
+/**
+ * `--path` / `-p` option accessor. Every CLI that acts on a
+ * filesystem location (snapshot a directory, back up a source dir,
+ * restore into a destination dir) reads it through this so callers
+ * can stay consistent.
+ */
+val CommandLine.path: String?
+    get() = this["path"] ?: this["p"]
+
+/**
+ * `--delete` flag accessor — shorthand for CLIs that want a verb-
+ * style flag rather than a positional subcommand.
+ */
+val CommandLine.delete: Boolean
+    get() = "delete" in this
+
+/**
+ * `--restore` flag accessor — used by the backup CLI to spell out
+ * the restore verb without conflicting with commons-cli's built-in
+ * short-option namespace.
+ */
+val CommandLine.restore: Boolean
+    get() = "restore" in this
+
+/**
+ * `--target` / `-t` option accessor. The backup CLI passes this for
+ * the optional target directory (where the archive file is written);
+ * distinct from [type] because they're used in different contexts.
+ */
+val CommandLine.target: String?
+    get() = this["target"]

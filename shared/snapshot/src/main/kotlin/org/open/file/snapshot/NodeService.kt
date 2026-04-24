@@ -23,4 +23,9 @@ class NodeService {
         return dao.insert(node)
     }
 
+    /** Drop every node belonging to [snapshotId]. Safe to call on an id with no rows. */
+    fun deleteBySnapshotId(snapshotId: String) {
+        dao.deleteBySnapshotId(snapshotId)
+    }
+
 }

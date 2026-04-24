@@ -4,11 +4,7 @@ plugins {
 }
 
 group = "org.open.file"
-version = libs.versions.project.get()
-
-repositories {
-    mavenCentral()
-}
+version = projectVersion()
 
 dependencies {
     // Use the Kotlin Test integration.

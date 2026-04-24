@@ -1,0 +1,44 @@
+CREATE TABLE backups (
+    id TEXT NOT NULL PRIMARY KEY,
+    rootPath TEXT NOT NULL,
+    destinationPath TEXT NOT NULL,
+    -- Parent directory the archive was written into. Nullable for rows
+    -- migrated in from before the column existed; callers default to
+    -- the built-in archive dir when this is null.
+    targetDirectory TEXT,
+    createdAt INTEGER NOT NULL,
+    compression TEXT NOT NULL,
+    originalSize INTEGER NOT NULL,
+    archivedSize INTEGER NOT NULL,
+    entryCount INTEGER NOT NULL,
+    snapshotId TEXT,
+    -- Whether the archive includes hidden / dotdir entries. Integer
+    -- 0/1 rather than BOOLEAN because SQLite has no real boolean type
+    -- and this matches what SqlDelight generates for Boolean columns.
+    -- Defaults to 1 (include) for rows migrated in from before the
+    -- column existed — preserves pre-toggle behaviour.
+    includeHidden INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX backup_rootPath ON backups(rootPath);
+CREATE INDEX backup_createdAt ON backups(createdAt);
+CREATE INDEX backup_snapshotId ON backups(snapshotId);
+
+insertFullBackupObject:
+INSERT OR REPLACE INTO backups (
+    id, rootPath, destinationPath, targetDirectory, createdAt,
+    compression, originalSize, archivedSize, entryCount, snapshotId,
+    includeHidden
+) VALUES ?;
+
+findById:
+SELECT * FROM backups WHERE id = ?;
+
+selectAll:
+SELECT * FROM backups ORDER BY createdAt DESC;
+
+selectBySnapshotId:
+SELECT * FROM backups WHERE snapshotId = ?;
+
+deleteById:
+DELETE FROM backups WHERE id = ?;

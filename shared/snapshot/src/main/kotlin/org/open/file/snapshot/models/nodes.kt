@@ -1,13 +1,20 @@
 package org.open.file.snapshot.models
 
-// internal to the snapshot module, not in domain
+/**
+ * Pre-persistence tree built by [org.open.file.snapshot.gen.TreeBuilder].
+ *
+ * These used to be `internal` so no one outside :shared:snapshot could
+ * accidentally fabricate a tree, but the backup module needs to walk the
+ * tree to drive its zip writer and reads are harmless. Keep them public;
+ * construction is still effectively gated behind TreeBuilder.
+ */
 sealed class RawNode {
     abstract val name: String
     abstract val hash: String
     abstract val path: String
 }
 
-internal data class RawFileNode(
+data class RawFileNode(
     override val name: String,
     override val hash: String,
     override val path: String,
@@ -15,7 +22,7 @@ internal data class RawFileNode(
     val lastModified: Long,
 ) : RawNode()
 
-internal data class RawDirectoryNode(
+data class RawDirectoryNode(
     override val name: String,
     override val hash: String,
     override val path: String,

@@ -1,51 +1,176 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a package using Gradle and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-gradle
-
 name: Publish Release
 
+# Two ways to cut a release — pick whichever fits the moment:
+#
+# 1. Tag-driven (CLI):
+#      git tag v0.0.1 && git push origin v0.0.1
+#    → workflow creates the GitHub Release with auto-generated
+#      notes (commits since the previous tag), flags prereleases
+#      by tag suffix, and attaches binaries.
+#
+# 2. UI-driven (GitHub web):
+#      Releases → Draft a new release → pick / create tag, write
+#      your own notes, tick prerelease if relevant, hit Publish.
+#    → workflow only attaches binaries to the release you just
+#      published. Your notes / prerelease flag are preserved.
+#
+# Either way the build matrix runs the same and the same set of
+# artifacts ends up on the release.
 on:
+  push:
+    tags:
+      - 'v*'
   release:
-    types: [created]
+    types: [published]
+
+# All jobs share this version derived from the tag so the
+# artifacts, Maven coordinates, and installer metadata line up.
+# For `push: tags/v*` the tag is `github.ref_name` (`v0.0.1`);
+# for `release: published` it's `github.event.release.tag_name`.
+# The leading `v` is stripped by ProjectVersion.kt.
+env:
+  RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
 
 jobs:
-  build:
 
+  # Tag-push path only: create the release shell with auto notes.
+  # For the UI path the release already exists, so this job skips
+  # and the asset-upload jobs fall through to attach to the
+  # existing release.
+  create-release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so release notes can diff against the previous tag
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          draft: false
+          # `v1.0.0-rc1` / `v1.0.0-beta` / `v1.0.0-alpha.2` are
+          # prereleases; bare semver tags are not.
+          prerelease: ${{ contains(github.ref_name, '-') }}
+
+  # Platform-independent CLI archive. Produces `openfile-<version>.{zip,tar}`
+  # via the `application` plugin's distribution tasks.
+  cli-archive:
+    needs: create-release
+    # Run when create-release succeeded (tag-push path) OR was
+    # skipped (release-published path). Without this, the
+    # release-published path would block on a job that never runs.
+    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build CLI distribution archives
+        run: ./gradlew :apps:cli:distZip :apps:cli:distTar
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach CLI archives to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/cli/build/distributions/openfile-*.zip
+            apps/cli/build/distributions/openfile-*.tar
+
+  # Native desktop installers — one per platform. jpackage has to
+  # run on the target OS (you can't cross-build a .dmg from
+  # Ubuntu), so each format gets its own runner.
+  desktop-installer:
+    needs: create-release
+    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            format: deb
+          - os: macos-latest
+            format: dmg
+          - os: windows-latest
+            format: msi
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make gradle wrapper executable
+        if: matrix.os != 'windows-latest'
+        run: chmod +x ./gradlew
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Package native distribution
+        run: ./gradlew :desktop-ui:packageReleaseDistributionForCurrentOS
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach ${{ matrix.format }} installer to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: desktop-ui/build/compose/binaries/main-release/${{ matrix.format }}/*.${{ matrix.format }}
+
+  # Maven Packages publication. Independent of the asset upload —
+  # if Maven publish flakes, the GitHub Release still has the
+  # binaries attached, and vice versa.
+  maven-packages:
+    needs: create-release
+    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-      - name: Change wrapper permissions
+      - name: Make gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@main
-        with:
-          arguments: build
-        env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
-      # the publishing section of your build.gradle
       - name: Publish to GitHub Packages
-        uses: gradle/gradle-build-action@main
-        with:
-          arguments: publish
+        run: ./gradlew publish
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}

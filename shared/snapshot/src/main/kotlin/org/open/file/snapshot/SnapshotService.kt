@@ -19,4 +19,13 @@ class SnapshotService {
         return dao.create(snapshot)
     }
 
+    /**
+     * Delete the snapshot header. Does NOT cascade into the node tree —
+     * callers that want the full graph gone should also call
+     * [NodeService.deleteBySnapshotId].
+     */
+    fun delete(snapshot: Snapshot): Boolean {
+        return dao.delete(snapshot)
+    }
+
 }

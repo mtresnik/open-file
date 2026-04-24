@@ -4,11 +4,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = libs.versions.project.get()
-
-repositories {
-    mavenCentral()
-}
+version = projectVersion()
 
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")

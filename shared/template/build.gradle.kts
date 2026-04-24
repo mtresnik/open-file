@@ -3,11 +3,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = libs.versions.project.get()
-
-repositories {
-    mavenCentral()
-}
+version = projectVersion()
 
 dependencies {
     implementation(project(":shared"))
