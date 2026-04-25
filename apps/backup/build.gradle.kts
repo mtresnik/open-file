@@ -7,6 +7,13 @@ plugins {
 group = "org.open.file.backup"
 version = libs.versions.project.get()
 
+// Disambiguate from `:shared:backup`'s jar — both projects are
+// named `backup`, which collides in the CLI distribution's
+// `lib/` directory without an explicit archives name.
+base {
+    archivesName.set("backup-sql")
+}
+
 sqldelight {
     databases {
         create("Database") {
@@ -67,3 +74,4 @@ tasks.matching { it.name == "verifyMainDatabaseMigration" }.configureEach {
 }
 
 tasks.withType<Tar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+tasks.withType<Zip> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }

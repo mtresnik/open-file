@@ -8,6 +8,13 @@ plugins {
 group = "org.open.file.snapshot"
 version = libs.versions.project.get()
 
+// Disambiguate from `:shared:snapshot`'s jar — both projects are
+// named `snapshot` to Gradle, so without this the application
+// plugin's distZip / distTar collide on `snapshot-<version>.jar`.
+base {
+    archivesName.set("snapshot-sql")
+}
+
 sqldelight {
     databases {
         create("Database") {

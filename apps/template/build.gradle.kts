@@ -8,6 +8,13 @@ plugins {
 group = "org.open.file.template"
 version = libs.versions.project.get()
 
+// Disambiguate from `:shared:template`'s jar — both projects are
+// named `template`, which collides in the CLI distribution's
+// `lib/` directory without an explicit archives name.
+base {
+    archivesName.set("template-sql")
+}
+
 sqldelight {
     databases {
         create("Database") {
