@@ -71,6 +71,19 @@ compose.desktop {
                 "jdk.unsupported",
             )
         }
+
+        // Compose Desktop wires ProGuard into the release packaging
+        // task by default (`packageReleaseDistributionForCurrentOS`).
+        // ProGuard 7.2.2 doesn't understand Guava's modern
+        // `VarHandle` / `MethodHandle` internals and treats the
+        // resulting unresolved references as fatal warnings, so the
+        // release build dies during minification. We don't actually
+        // need shrinking for an end-user desktop app — the binary
+        // size win isn't worth the brittleness — so turn it off and
+        // ship the unminified release.
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
     }
 }
 
