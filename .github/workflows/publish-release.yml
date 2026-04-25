@@ -23,14 +23,6 @@ on:
   release:
     types: [published]
 
-# All jobs share this version derived from the tag so the
-# artifacts, Maven coordinates, and installer metadata line up.
-# For `push: tags/v*` the tag is `github.ref_name` (`v0.0.1`);
-# for `release: published` it's `github.event.release.tag_name`.
-# The leading `v` is stripped by ProjectVersion.kt.
-env:
-  RELEASE_VERSION: ${{ github.event.release.tag_name || github.ref_name }}
-
 jobs:
 
   # Tag-push path only: create the release shell with auto notes.
@@ -168,9 +160,4 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Publish to GitHub Packages
-        run: ./gradlew publish
-        env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

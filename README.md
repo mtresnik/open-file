@@ -154,37 +154,21 @@ Standard Gradle. Common commands:
 
 ### Versioning
 
-There's no version number hand-kept in code. The project version is
-derived at build time by `buildSrc/src/main/kotlin/ProjectVersion.kt`:
+The project version is hand-kept in three places that need to stay
+in lockstep when cutting a release:
 
-1. `RELEASE_VERSION` env var — set by CI from the git tag. `v0.0.1`
-   → `0.0.1`.
-2. `develop` branch — last tag's minor bumped + `-SNAPSHOT`. Last
-   tag `v0.0.1` + on develop → `0.1.0-SNAPSHOT`. Detected via
-   `GITHUB_REF_NAME` in CI, `git rev-parse --abbrev-ref HEAD`
-   locally.
-3. `git describe --tags --always --dirty=-SNAPSHOT` — for other
-   local / feature-branch builds, produces something like
-   `0.0.1-3-g0deadbe`.
-4. `0.0.0-SNAPSHOT` fallback if none of the above works.
+- `gradle/libs.versions.toml` — `project = "1.0.0-SNAPSHOT"`. Every
+  module's `version =` reads this catalog entry.
+- `desktop-ui/build.gradle.kts` — `packageVersion = "1.0.0"` for
+  the `.dmg` / `.msi` / `.deb` installer metadata. Must be a bare
+  `major.minor.build` triple with `MAJOR >= 1` (jpackage's DMG
+  validator).
+- `desktop-ui/src/main/kotlin/org/open/file/ui/util/AppInfo.kt` —
+  `const val VERSION = "1.0.0"` shown in the in-app About dialog.
 
-Cutting a release is one command — the tag is the source of truth:
+Cutting a release:
 
-```bash
-git tag v0.0.1
-git push origin v0.0.1
-```
-
-The release workflow sets `RELEASE_VERSION=v0.0.1`, Gradle strips
-the `v`, and every module — CLI zip, Maven coordinates, `.dmg` /
-`.msi` / `.deb` installers, and `AppInfo.VERSION` surfaced in the
-About dialog — ends up stamped with `0.0.1`.
-
-Pushes to `develop` trigger snapshot publishing with the bumped
-minor version, so consumers pulling `0.1.0-SNAPSHOT` from GitHub
-Packages always track the tip of develop without manual version
-bumps.
-
-The codebase is Kotlin 2.1.20, JDK 11 toolchain for non-UI modules,
-and Compose Desktop 1.7.3 for the UI. SQLite is the only supported
-backend — the earlier Mongo + HTTP variants were remov
+1. Bump the three values above on a release-prep PR; merge to main.
+2. Tag and push: `git tag v1.0.0 && git push origin v1.0.0`.
+3. The release workflow builds and attaches binaries to the
+   GitHub Release for that tag.

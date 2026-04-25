@@ -1,7 +1,5 @@
 [versions]
-# `project` is derived at build time from the git tag — see
-# buildSrc/src/main/kotlin/ProjectVersion.kt. Nothing in this file
-# references it any more.
+project = "1.0.0-SNAPSHOT"
 guava = "33.4.6-jre"
 junit-jupiter-engine = "5.12.1"
 ktor = "3.1.3"

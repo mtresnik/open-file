@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.sqldelight)
     `maven-publish`
+    kotlin("plugin.serialization")
 }
 
 group = "org.open.file.template"
@@ -73,6 +74,9 @@ java {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
 }
 
 tasks.matching { it.name == "verifyMainDatabaseMigration" }.configureEach {

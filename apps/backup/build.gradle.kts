@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.open.file.backup"
-version = projectVersion()
+version = libs.versions.project.get()
 
 sqldelight {
     databases {
@@ -67,4 +67,3 @@ tasks.matching { it.name == "verifyMainDatabaseMigration" }.configureEach {
 }
 
 tasks.withType<Tar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
-tasks.withType<Zip> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }

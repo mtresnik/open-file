@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = projectVersion()
+version = libs.versions.project.get()
 
 // Pure zip I/O: no domain-layer dependencies (no Backup, no Template,
 // no Snapshot types). Consumers — `:shared:backup` for restore,
@@ -23,4 +23,7 @@ java {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
 }

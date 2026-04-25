@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = projectVersion()
+version = libs.versions.project.get()
 
 dependencies {
     // Use the Kotlin Test integration.

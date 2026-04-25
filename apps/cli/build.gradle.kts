@@ -1,5 +1,5 @@
 group = "org.open.file"
-version = projectVersion()
+version = libs.versions.project.get()
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -25,7 +25,7 @@ publishing {
         withType<MavenPublication>().all {
             groupId = "org.open.file"
             artifactId = "cli"
-            version = projectVersion()
+            version = libs.versions.project.get()
         }
     }
 }

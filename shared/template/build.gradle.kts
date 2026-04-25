@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "org.open.file.shared"
-version = projectVersion()
+version = libs.versions.project.get()
 
 dependencies {
     implementation(project(":shared"))
