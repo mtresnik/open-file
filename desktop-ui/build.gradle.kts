@@ -70,6 +70,39 @@ compose.desktop {
                 "java.management",
                 "jdk.unsupported",
             )
+
+            windows {
+                // Desktop + Start-menu shortcuts. Both are
+                // surfaced as checkboxes in the MSI's "Custom
+                // Setup" page if the user hits "Custom" — by
+                // default they're checked, so a Next-Next-Finish
+                // install creates both.
+                shortcut = true
+                menuGroup = "OpenFile"
+
+                // Let the user pick the install directory during
+                // setup. Without this the MSI silently installs
+                // to `C:\Program Files\open-file\`.
+                dirChooser = true
+
+                // upgradeUuid is required for the MSI to recognise
+                // newer versions as upgrades of older ones (rather
+                // than as a separate side-by-side product). Pick
+                // any random UUID once and never change it; if you
+                // bump it, MSI treats every existing install as a
+                // different product and you can't upgrade in place.
+                //
+                // Generated with `uuidgen` — replace this with a
+                // value of your own if you fork the project so
+                // your installer doesn't try to upgrade an
+                // upstream OpenFile install.
+                upgradeUuid = "9a8d1c12-3ad7-4b02-9e37-7b0a1c9f88c1"
+
+                // Per-user install (writes to %LOCALAPPDATA%) so
+                // the MSI doesn't need admin elevation. Set to
+                // false if you want a system-wide install instead.
+                perUserInstall = true
+            }
         }
 
         // Compose Desktop wires ProGuard into the release packaging
